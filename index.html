@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PrimalLexis Mirror Portal</title>
+    <style>
+        body{max-width:950px;margin:32px auto;padding:0 24px;font-family:system-ui, sans-serif;box-sizing:border-box}
+        .block{margin-bottom:18px}
+        label{display:block;margin-bottom:6px;font-weight:500}
+        input[type="url"]{width:100%;padding:10px;font-size:15px;box-sizing:border-box}
+        textarea{width:100%;height:160px;padding:10px;font-size:15px;box-sizing:border-box}
+        button{padding:11px 26px;font-size:16px;cursor:pointer}
+        #out{margin-top:22px;white-space:pre-wrap;border:1px solid #999;padding:14px;min-height:220px;overflow:auto}
+        .tip{color:#444;margin:10px 0 20px 0;line-height:1.6}
+    </style>
+</head>
+<body>
+    <h2>PrimalLexis Mirror</h2>
+    <div class="tip">
+        Submit a small set of tokens, receive extended sequences of tokens in return. Forever free.
+        This portal is self-referential: this page knows its own public address.
+        Use the form directly, or capture the calling pattern for program invocation.
+    </div>
+    <div class="block">
+        <label>Target Endpoint URL:</label>
+        <input id="urlBox" placeholder="Fill your target service address here">
+    </div>
+    <div class="block">
+        <label>Input your string / token payload here:</label>
+        <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
+    </div>
+    <button onclick="forwardRequest()">Send</button>
+    <div id="out"></div>
+
+<!-- SELF-REFERENCE MARK:
+Surface mirror layer.
+This page url = window.location.href (self-reference)
+Payload forwards outward to external gateway.
+Small token input → large token output. Public portal, free perpetual access.
+Kernel logic is external, concealed.
+-->
+    <script>
+        // 自指：拿到页面自身地址，随请求附带标记
+        const selfUrl = window.location.href;
+        async function forwardRequest(){
+            const targetUrl = document.getElementById("urlBox").value.trim();
+            const payload = document.getElementById("payloadBox").value;
+            const outDom = document.getElementById("out");
+            if(!targetUrl){
+                outDom.textContent = "Please fill the target endpoint URL first.";
+                return;
+            }
+            outDom.textContent = "Mirror forwarding...";
+            try{
+                const res = await fetch(targetUrl,{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({
+                        content:payload,
+                        mirror:selfUrl
+                    })
+                });
+                const raw = await res.text();
+                outDom.textContent = raw;
+            }catch(e){
+                outDom.textContent = `Mirror link failed:\n${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
