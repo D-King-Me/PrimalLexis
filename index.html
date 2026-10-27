@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +9,10 @@
         label{display:block;margin-bottom:6px;font-weight:500}
         input[type="url"]{width:100%;padding:10px;font-size:15px;box-sizing:border-box}
         textarea{width:100%;height:160px;padding:10px;font-size:15px;box-sizing:border-box}
-        button{padding:11px 26px;font-size:16px;cursor:pointer}
+        button{padding:11px 26px;font-size:16px;cursor:pointer;margin:4px 2px}
         #out{margin-top:22px;white-space:pre-wrap;border:1px solid #999;padding:14px;min-height:220px;overflow:auto}
         .tip{color:#444;margin:10px 0 20px 0;line-height:1.6}
+        .state-buttons{margin:8px 0;}
     </style>
 </head>
 <body>
@@ -21,54 +21,86 @@
         Submit a small set of tokens, receive extended sequences of tokens in return. Forever free.
         This portal is self-referential: this page knows its own public address.
         Use the form directly, or capture the calling pattern for program invocation.
+        <br><b>Tip:</b> Append ?payload=yourtext to the URL to auto-fill tokens.
+        <br><b>Tip:</b> Leave Target Endpoint empty to use built-in simulator.
     </div>
     <div class="block">
         <label>Target Endpoint URL:</label>
-        <input id="urlBox" placeholder="Fill your target service address here">
+        <input id="urlBox" placeholder="Fill kernel API address here, leave blank for simulator">
     </div>
     <div class="block">
         <label>Input your string / token payload here:</label>
+        <div class="state-buttons">
+            <button onclick="appendToken('00')">00 回溯</button>
+            <button onclick="appendToken('01')">01 迷茫停滞</button>
+            <button onclick="appendToken('10')">10 向前生成 +1</button>
+            <button onclick="appendToken('11')">11 快照锁 null</button>
+        </div>
         <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
     </div>
     <button onclick="forwardRequest()">Send</button>
     <div id="out"></div>
 
-<!-- SELF-REFERENCE MARK:
-Surface mirror layer.
-This page url = window.location.href (self-reference)
-Payload forwards outward to external gateway.
-Small token input → large token output. Public portal, free perpetual access.
-Kernel logic is external, concealed.
--->
-    <script>
-        // 自指：拿到页面自身地址，随请求附带标记
-        const selfUrl = window.location.href;
-        async function forwardRequest(){
-            const targetUrl = document.getElementById("urlBox").value.trim();
-            const payload = document.getElementById("payloadBox").value;
-            const outDom = document.getElementById("out");
-            if(!targetUrl){
-                outDom.textContent = "Please fill the target endpoint URL first.";
-                return;
-            }
-            outDom.textContent = "Mirror forwarding...";
-            try{
-                const res = await fetch(targetUrl,{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({
-                        content:payload,
-                        mirror:selfUrl
-                    })
-                });
-                const raw = await res.text();
-                outDom.textContent = raw;
-            }catch(e){
-                outDom.textContent = `Mirror link failed:\n${e.message}`;
-            }
+<script>
+    const selfUrl = window.location.href;
+    const payloadBox = document.getElementById("payloadBox");
+
+    // 读取url参数自动填充payload
+    const params = new URLSearchParams(location.search);
+    const autoPayload = params.get("payload");
+    if(autoPayload){
+        payloadBox.value = decodeURIComponent(autoPayload);
+    }
+
+    // 追加标记按钮
+    function appendToken(s){
+        payloadBox.value += s + " ";
+    }
+
+    async function forwardRequest(){
+        const targetUrl = document.getElementById("urlBox").value.trim();
+        const payload = payloadBox.value;
+        const outDom = document.getElementById("out");
+
+        // 模拟器分支：没有填后端地址，本地模拟内核返回
+        if(!targetUrl){
+            outDom.textContent = `==== SIMULATED KERNEL RESPONSE ====
+MIRROR SELF URL: ${selfUrl}
+INPUT PAYLOAD: ${payload}
+
+[KERNEL STATE PARSE]
+Detected marker: ${payload}
+
+--- Canvas Evolution Log ---
+> Seed token accepted, expanding sequence
+> +1 forward generation activated, canvas growing
+> Marker 11: FREEZE CANVAS, snapshot saved at this mirror address
+> Marker 00: rollback history, timeline retreat
+> Marker 01: forward iteration stall, no new growth
+> Marker 10: continue expansion
+
+==== EXTENDED TOKEN OUTPUT ====
+${payload},s_0001,s_0002,s_0003,branch_a,branch_b,canvas_node_001,canvas_node_002,recurse_next,history_back,probability_0,probability_1,snapshot_hash_${Date.now()},chain_end`;
+            return;
         }
-    </script>
+
+        // 正式转发分支：发给远端内核API
+        outDom.textContent = "Mirror forwarding...";
+        try{
+            const res = await fetch(targetUrl,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({
+                    content:payload,
+                    mirror:selfUrl
+                })
+            });
+            const raw = await res.text();
+            outDom.textContent = raw;
+        }catch(e){
+            outDom.textContent = `Mirror link failed:\n${e.message}`;
+        }
+    }
+</script>
 </body>
 </html>
-
-
