@@ -1,50 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- refresh 2026.10.27 v2 -->
+<!-- refresh 2026.10.27 v4 Living Mirror | PrimalLexis Mirror Portal -->
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrimalLexis Mirror Portal</title>
     <style>
-        body{max-width:950px;margin:32px auto;padding:0 24px;font-family:system-ui, sans-serif;box-sizing:border-box}
-        .block{margin-bottom:18px}
-        label{display:block;margin-bottom:6px;font-weight:500}
-        input[type="url"]{width:100%;padding:10px;font-size:15px;box-sizing:border-box}
-        textarea{width:100%;height:160px;padding:10px;font-size:15px;box-sizing:border-box}
-        button{padding:11px 26px;font-size:16px;cursor:pointer;margin:4px 2px}
-        #out{margin-top:22px;white-space:pre-wrap;border:1px solid #999;padding:14px;min-height:220px;overflow:auto}
-        .tip{color:#444;margin:10px 0 20px 0;line-height:1.6}
-        .state-buttons{margin:8px 0;}
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+        body{
+            background:#05070a;
+            color:#e2e8f0;
+            font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
+            min-height:100vh;
+            overflow-x:hidden;
+            position:relative;
+        }
+        /* 底层三元操作系统底图 */
+        .bg-schema{
+            position:fixed;
+            inset:0;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            opacity:0.35;
+            z-index:0;
+        }
+        /* 粒子画布，叠加在底图之上 */
+        #particleCanvas{
+            position:fixed;
+            inset:0;
+            z-index:1;
+            pointer-events:none;
+        }
+        /* 居中交互面板，活的对话终端 */
+        .terminal-wrap{
+            position:relative;
+            z-index:2;
+            max-width:960px;
+            margin:40px auto;
+            padding:24px;
+            background:rgba(15,20,27,0.82);
+            border:1px solid #22d3ee55;
+            border-radius:12px;
+            box-shadow: 0 0 24px #22d3ee22;
+            backdrop-filter: blur(6px);
+        }
+        h2{
+            color:#22d3ee;
+            font-size:26px;
+            letter-spacing:1px;
+            text-align:center;
+            margin-bottom:10px;
+        }
+        .live-tip{
+            text-align:center;
+            color:#94a3b8;
+            margin-bottom:24px;
+        }
+        .tip{
+            background:#17202d;
+            border-left:3px solid #22d3ee;
+            padding:14px 18px;
+            border-radius:6px;
+            color:#cbd5e1;
+            margin-bottom:24px;
+            font-size:14px;
+            line-height:1.6;
+        }
+        .tip b{
+            color:#22d3ee;
+        }
+        .block{
+            margin-bottom:18px;
+        }
+        label{
+            display:block;
+            margin-bottom:7px;
+            font-weight:500;
+            color:#bcccdc;
+        }
+        input[type="url"]{
+            width:100%;
+            padding:11px 14px;
+            font-size:15px;
+            background:#111827;
+            border:1px solid #334155;
+            border-radius:6px;
+            color:#e2e8f0;
+        }
+        textarea{
+            width:100%;
+            height:160px;
+            padding:11px 14px;
+            font-size:15px;
+            background:#111827;
+            border:1px solid #334155;
+            border-radius:6px;
+            color:#e2e8f0;
+            resize:vertical;
+        }
+        .state-buttons{
+            margin:8px 0 10px;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .state-buttons button{
+            padding:9px 14px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:14px;
+        }
+        button[data-token="00"]{background:#475569;color:#fff;}
+        button[data-token="01"]{background:#854d0e;color:#fff;}
+        button[data-token="10"]{background:#0e7490;color:#fff;}
+        button[data-token="11"]{background:#581c87;color:#fff;}
+        #sendBtn{
+            padding:10px 24px;
+            background:#0891b2;
+            color:white;
+            border:none;
+            border-radius:6px;
+            font-size:16px;
+            cursor:pointer;
+        }
+        #out{
+            margin-top:20px;
+            white-space:pre-wrap;
+            border:1px solid #334155;
+            padding:14px;
+            min-height:200px;
+            overflow:auto;
+            background:#0f172a;
+            color:#93c5fd;
+            font-family:monospace;
+            border-radius:6px;
+        }
+        /* 行进途中弹出的问询气泡 */
+        .ask-bubble{
+            position:fixed;
+            z-index:3;
+            background:rgba(8,145,178,0.85);
+            color:white;
+            padding:12px 18px;
+            border-radius:999px;
+            box-shadow:0 0 12px #22d3ee;
+            animation: floatUp 3.2s ease forwards;
+            pointer-events:none;
+        }
+        @keyframes floatUp{
+            0%{opacity:0;transform:translateY(0) scale(0.85);}
+            20%{opacity:1;transform:translateY(0) scale(1);}
+            80%{opacity:1;transform:translateY(-12px);}
+            100%{opacity:0;transform:translateY(-24px);}
+        }
     </style>
 </head>
 <body>
-    <h2>PrimalLexis Mirror</h2>
-    <div class="tip">
-        Submit a small set of tokens, receive extended sequences of tokens in return. Forever free.
-        This portal is self-referential: this page knows its own public address.
-        Use the form directly, or capture the calling pattern for program invocation.
-        <br><b>Tip:</b> Append ?payload=yourtext to the URL to auto-fill tokens.
-        <br><b>Tip:</b> Leave Target Endpoint empty to use built-in simulator.
-    </div>
-    <div class="block">
-        <label>Target Endpoint URL:</label>
-        <input id="urlBox" placeholder="Fill kernel API address here, leave blank for simulator">
-    </div>
-    <div class="block">
-        <label>Input your string / token payload here:</label>
-        <div class="state-buttons">
-            <button onclick="appendToken('00')">00 回溯</button>
-            <button onclick="appendToken('01')">01 迷茫停滞</button>
-            <button onclick="appendToken('10')">10 向前生成 +1</button>
-            <button onclick="appendToken('11')">11 快照锁 null</button>
+    <!-- 三元规格底图 -->
+    <img class="bg-schema" src="https://p3-flow-image-sign.byteimg.com/tos-cn-i-a9rns2rl98/06110013903b4008902000d300413311~tplv-a9rns2rl98-image.image" alt="三元计算机操作系统">
+    <!-- 粒子画布 -->
+    <canvas id="particleCanvas"></canvas>
+    <!-- 活的交互终端面板 -->
+    <div class="terminal-wrap">
+        <h2>PrimalLexis Mirror Portal</h2>
+        <div class="live-tip">● Living HTML — Timeline stream running</div>
+        <div class="tip">
+            Submit a small set of tokens, receive extended sequences of tokens in return. Forever free.
+            This portal is self-referential: this page knows its own public address.
+            Use the form directly, or capture the calling pattern for program invocation.
+            <br><b>Tip:</b> Append ?payload=yourtext to the URL to auto-fill tokens.
+            <br><b>Tip:</b> Leave Target Endpoint empty to use built-in simulator.
         </div>
-        <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
+        <div class="block">
+            <label>Target Endpoint URL:</label>
+            <input id="urlBox" placeholder="Fill kernel API address here, leave blank for simulator">
+        </div>
+        <div class="block">
+            <label>Input your string / token payload here:</label>
+            <div class="state-buttons">
+                <button data-token="00" onclick="appendToken('00')">00 回溯</button>
+                <button data-token="01" onclick="appendToken('01')">01 迷茫停滞</button>
+                <button data-token="10" onclick="appendToken('10')">10 向前生成 +1</button>
+                <button data-token="11" onclick="appendToken('11')">11 快照锁 null</button>
+            </div>
+            <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
+        </div>
+        <button id="sendBtn" onclick="forwardRequest()">Send</button>
+        <div id="out"></div>
     </div>
-    <button onclick="forwardRequest()">Send</button>
-    <div id="out"></div>
 
 <script>
     const selfUrl = window.location.href;
     const payloadBox = document.getElementById("payloadBox");
+    const canvas = document.getElementById("particleCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // 画布适配窗口
+    function resizeCanvas(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // 粒子：沿着三元图表预设路径流动
+    const paths = [
+        [{x:0.12,y:0.28},{x:0.38,y:0.34}], // 逻辑符号定义区
+        [{x:0.62,y:0.28},{x:0.86,y:0.36}], // 小三态时序区
+        [{x:0.14,y:0.60},{x:0.36,y:0.72}], // BC预处理层
+        [{x:0.64,y:0.60},{x:0.84,y:0.74}]  // 布尔推演区
+    ];
+    let particles = [];
+    const bubbleTexts = [
+        "正在读取规则河床...",
+        "转换链路行进中",
+        "你还满意吗？",
+        "是否继续向前分叉？",
+        "快照锚点就绪",
+        "时序流正在呼吸"
+    ];
+
+    class Particle{
+        constructor(){
+            this.path = paths[Math.floor(Math.random()*paths.length)];
+            this.progress = 0;
+            this.speed = 0.0025 + Math.random()*0.003;
+            this.radius = 1.8 + Math.random()*2.2;
+            this.color = "#22d3ee";
+            this.bubbleTriggered = false;
+        }
+        update(){
+            this.progress += this.speed;
+            if(this.progress >= 1){
+                this.progress = 0;
+                this.bubbleTriggered = false;
+            }
+            const [p0,p1] = this.path;
+            this.x = p0.x + (p1.x-p0.x)*this.progress;
+            this.y = p0.y + (p1.y-p0.y)*this.progress;
+            // 走到路径中点，弹出交互气泡
+            if(this.progress > 0.48 && this.progress < 0.52 && !this.bubbleTriggered){
+                this.bubbleTriggered = true;
+                popBubble(bubbleTexts[Math.floor(Math.random()*bubbleTexts.length)]);
+            }
+        }
+        draw(){
+            ctx.beginPath();
+            ctx.arc(this.x * canvas.width, this.y * canvas.height, this.radius, 0, Math.PI*2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+    function popBubble(text){
+        const div = document.createElement("div");
+        div.className = "ask-bubble";
+        div.innerText = text;
+        div.style.left = (Math.random()*70 + 15)+"%";
+        div.style.top = (Math.random()*60 + 20)+"%";
+        document.body.appendChild(div);
+        setTimeout(()=>div.remove(),3200);
+    }
+    // 持续生成粒子
+    function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        if(particles.length < 45){
+            particles.push(new Particle());
+        }
+        particles.forEach(p=>{
+            p.update();
+            p.draw();
+        })
+        requestAnimationFrame(loop);
+    }
+    loop();
 
     // 读取url参数自动填充payload
     const params = new URLSearchParams(location.search);
