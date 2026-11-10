@@ -1,341 +1,209 @@
-<!DOCTYPE html>
-<html lang="en">
-<!-- refresh 2026.10.27 v4 Living Mirror | PrimalLexis Mirror Portal -->
+# -*- coding: utf-8 -*-
+"""把许愿姬嵌入 PrimalLexis Mirror Portal，并让她接管页面自更新。"""
+import os
+import base64
+
+DL = r"C:\Users\Administrator\Downloads"
+SRC = os.path.join(DL, "primallexis (1).html")
+DST = os.path.join(DL, "primallexis-wishmaid.html")
+WS = r"C:\Users\Administrator\Documents\deepseek-harness\default-workspace"
+ART = os.path.join(WS, "assets", "wishmaid-alpha.png")
+
+with open(ART, "rb") as f:
+    art_b64 = base64.b64encode(f.read()).decode()
+
+html = """<!DOCTYPE html>
+<html lang="zh-CN">
+<!-- PrimalLexis Mirror Portal · 大本钟 · 许愿姬版 -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrimalLexis Mirror Portal</title>
-    <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
-        body{
-            background:#05070a;
-            color:#e2e8f0;
-            font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
-            min-height:100vh;
-            overflow-x:hidden;
-            position:relative;
-        }
-        /* 底层三元操作系统底图 */
-        .bg-schema{
-            position:fixed;
-            inset:0;
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            opacity:0.35;
-            z-index:0;
-        }
-        /* 粒子画布，叠加在底图之上 */
-        #particleCanvas{
-            position:fixed;
-            inset:0;
-            z-index:1;
-            pointer-events:none;
-        }
-        /* 居中交互面板，活的对话终端 */
-        .terminal-wrap{
-            position:relative;
-            z-index:2;
-            max-width:960px;
-            margin:40px auto;
-            padding:24px;
-            background:rgba(15,20,27,0.82);
-            border:1px solid #22d3ee55;
-            border-radius:12px;
-            box-shadow: 0 0 24px #22d3ee22;
-            backdrop-filter: blur(6px);
-        }
-        h2{
-            color:#22d3ee;
-            font-size:26px;
-            letter-spacing:1px;
-            text-align:center;
-            margin-bottom:10px;
-        }
-        .live-tip{
-            text-align:center;
-            color:#94a3b8;
-            margin-bottom:24px;
-        }
-        .tip{
-            background:#17202d;
-            border-left:3px solid #22d3ee;
-            padding:14px 18px;
-            border-radius:6px;
-            color:#cbd5e1;
-            margin-bottom:24px;
-            font-size:14px;
-            line-height:1.6;
-        }
-        .tip b{
-            color:#22d3ee;
-        }
-        .block{
-            margin-bottom:18px;
-        }
-        label{
-            display:block;
-            margin-bottom:7px;
-            font-weight:500;
-            color:#bcccdc;
-        }
-        input[type="url"]{
-            width:100%;
-            padding:11px 14px;
-            font-size:15px;
-            background:#111827;
-            border:1px solid #334155;
-            border-radius:6px;
-            color:#e2e8f0;
-        }
-        textarea{
-            width:100%;
-            height:160px;
-            padding:11px 14px;
-            font-size:15px;
-            background:#111827;
-            border:1px solid #334155;
-            border-radius:6px;
-            color:#e2e8f0;
-            resize:vertical;
-        }
-        .state-buttons{
-            margin:8px 0 10px;
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-        }
-        .state-buttons button{
-            padding:9px 14px;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:14px;
-        }
-        button[data-token="00"]{background:#475569;color:#fff;}
-        button[data-token="01"]{background:#854d0e;color:#fff;}
-        button[data-token="10"]{background:#0e7490;color:#fff;}
-        button[data-token="11"]{background:#581c87;color:#fff;}
-        #sendBtn{
-            padding:10px 24px;
-            background:#0891b2;
-            color:white;
-            border:none;
-            border-radius:6px;
-            font-size:16px;
-            cursor:pointer;
-        }
-        #out{
-            margin-top:20px;
-            white-space:pre-wrap;
-            border:1px solid #334155;
-            padding:14px;
-            min-height:200px;
-            overflow:auto;
-            background:#0f172a;
-            color:#93c5fd;
-            font-family:monospace;
-            border-radius:6px;
-        }
-        /* 行进途中弹出的问询气泡 */
-        .ask-bubble{
-            position:fixed;
-            z-index:3;
-            background:rgba(8,145,178,0.85);
-            color:white;
-            padding:12px 18px;
-            border-radius:999px;
-            box-shadow:0 0 12px #22d3ee;
-            animation: floatUp 3.2s ease forwards;
-            pointer-events:none;
-        }
-        @keyframes floatUp{
-            0%{opacity:0;transform:translateY(0) scale(0.85);}
-            20%{opacity:1;transform:translateY(0) scale(1);}
-            80%{opacity:1;transform:translateY(-12px);}
-            100%{opacity:0;transform:translateY(-24px);}
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrimalLexis · 许愿姬</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05070a;color:#e2e8f0;font-family:system-ui,-apple-system,"Segoe UI",monospace;min-height:100vh;overflow-x:hidden}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+.wrap{position:relative;z-index:2;max-width:960px;margin:28px auto 140px;padding:22px;background:rgba(15,20,27,.88);border:1px solid #22d3ee55;border-radius:12px;box-shadow:0 0 24px #22d3ee22}
+h2{color:#22d3ee;font-size:24px;letter-spacing:1px;text-align:center;margin-bottom:6px}
+.sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:18px}
+.slots{display:flex;gap:8px;margin-bottom:14px;font-size:12px;color:#94a3b8}
+.slot{padding:5px 10px;border:1px solid #334155;border-radius:4px;background:#0b111a}
+.slot.on{border-color:#22d3ee;color:#22d3ee}
+.clock{text-align:center;padding:14px 0 6px}
+.big{font-variant-numeric:tabular-nums;font-size:clamp(2.4rem,9vw,4.6rem);letter-spacing:3px;color:#e2f6ff;text-shadow:0 0 18px #22d3ee55}
+.big.cal{color:#facc15;text-shadow:0 0 22px #facc1570}
+.zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin:12px 0 6px;font-size:12.5px;color:#9fb3c8}
+.zrow{display:flex;justify-content:space-between;padding:4px 8px;background:#0b111a;border:1px solid #1e293b;border-radius:4px}
+.zrow b{color:#7dd3fc}
+.probe{margin:14px 0;padding:12px 14px;background:#0f172a;border-left:3px solid #22d3ee;border-radius:6px;font-size:12.5px;line-height:1.8;color:#cbd5e1;word-break:break-all}
+.probe i{color:#64748b;font-style:normal}
+.block{margin-bottom:14px}
+label{display:block;margin-bottom:6px;font-size:13px;color:#bcccdc}
+input[type=url],textarea,.wish{width:100%;padding:10px 12px;font-size:14px;background:#111827;border:1px solid #334155;border-radius:6px;color:#e2e8f0}
+textarea{height:110px;resize:vertical}
+.states{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.states button{padding:8px 13px;border:none;border-radius:5px;cursor:pointer;font-size:13px}
+button[data-token="00"]{background:#475569;color:#fff}
+button[data-token="01"]{background:#854d0e;color:#fff}
+button[data-token="10"]{background:#0e7490;color:#fff}
+button[data-token="11"]{background:#581c87;color:#fff}
+#sendBtn{padding:10px 24px;background:#0891b2;color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer}
+#out{margin-top:16px;white-space:pre-wrap;border:1px solid #334155;padding:13px;min-height:170px;background:#0f172a;color:#93c5fd;font-family:monospace;font-size:13px;border-radius:6px;overflow:auto}
+#pet{position:fixed;right:26px;bottom:18px;z-index:9;width:190px;cursor:pointer;user-select:none;filter:drop-shadow(0 8px 22px rgba(34,211,238,.45))}
+#pet img{width:100%;display:block;animation:bob 3.6s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+#bubble{position:fixed;right:214px;bottom:150px;z-index:9;max-width:300px;padding:12px 16px;background:rgba(11,17,26,.95);border:1px solid #22d3ee88;border-radius:14px;color:#cffafe;font-size:13px;line-height:1.72;opacity:0;transition:.3s;white-space:pre-wrap}
+#bubble.show{opacity:1}
+#stateTag{position:fixed;right:26px;bottom:2px;z-index:9;font-size:11px;color:#64748b}
+</style>
 </head>
 <body>
-    <!-- 三元规格底图 -->
-    <img class="bg-schema" src="https://p3-flow-image-sign.byteimg.com/tos-cn-i-a9rns2rl98/06110013903b4008902000d300413311~tplv-a9rns2rl98-image.image" alt="三元计算机操作系统">
-    <!-- 粒子画布 -->
-    <canvas id="particleCanvas"></canvas>
-    <!-- 活的交互终端面板 -->
-    <div class="terminal-wrap">
-        <h2>PrimalLexis Mirror Portal</h2>
-        <div class="live-tip">● Living HTML — Timeline stream running</div>
-        <div class="tip">
-            Submit a small set of tokens, receive extended sequences of tokens in return. Forever free.
-            This portal is self-referential: this page knows its own public address.
-            Use the form directly, or capture the calling pattern for program invocation.
-            <br><b>Tip:</b> Append ?payload=yourtext to the URL to auto-fill tokens.
-            <br><b>Tip:</b> Leave Target Endpoint empty to use built-in simulator.
-        </div>
-        <div class="block">
-            <label>Target Endpoint URL:</label>
-            <input id="urlBox" placeholder="Fill kernel API address here, leave blank for simulator">
-        </div>
-        <div class="block">
-            <label>Input your string / token payload here:</label>
-            <div class="state-buttons">
-                <button data-token="00" onclick="appendToken('00')">00 回溯</button>
-                <button data-token="01" onclick="appendToken('01')">01 迷茫停滞</button>
-                <button data-token="10" onclick="appendToken('10')">10 向前生成 +1</button>
-                <button data-token="11" onclick="appendToken('11')">11 快照锁 null</button>
-            </div>
-            <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
-        </div>
-        <button id="sendBtn" onclick="forwardRequest()">Send</button>
-        <div id="out"></div>
+<canvas id="stars"></canvas>
+<div class="wrap">
+  <h2>PrimalLexis Mirror Portal</h2>
+  <div class="sub">Living HTML · 王源词 · 大本钟在云端响，这边只收字符串</div>
+  <div class="slots">
+    <div class="slot" id="slot-s33">三三 · 有图</div>
+    <div class="slot" id="slot-a0">阿零 · 无图</div>
+    <div class="slot" id="slot-void">空位 · 不冒充</div>
+  </div>
+  <div class="clock"><div class="big" id="big">--:--:--</div></div>
+  <div class="zones" id="zones"></div>
+  <div class="probe">
+    <i>自指探针</i> 本页地址：<span id="p-self"></span><br>
+    <i>串源</i> <span id="p-base"></span><br>
+    <i>相位</i> <span id="p-phase"></span>　<i>校准点</i> <span id="p-cal"></span><br>
+    <i>注入串</i> <span id="p-payload"></span>
+  </div>
+  <div class="block"><label>Target Endpoint URL：</label>
+    <input id="urlBox" placeholder="留空走本地模拟"></div>
+  <div class="block"><label>Token payload：</label>
+    <div class="states">
+      <button data-token="00" onclick="appendToken('00')">00 回溯</button>
+      <button data-token="01" onclick="appendToken('01')">01 迷茫</button>
+      <button data-token="10" onclick="appendToken('10')">10 前进 +1</button>
+      <button data-token="11" onclick="appendToken('11')">11 快照锁</button>
     </div>
-
+    <textarea id="payloadBox" placeholder="Type test to start..."></textarea>
+  </div>
+  <div class="block"><label>对许愿姬许个愿：</label>
+    <input class="wish" id="wishBox" placeholder="写下一个愿望"></div>
+  <button id="sendBtn" onclick="forwardRequest()">Send</button>
+  <div id="out"></div>
+</div>
+<div id="bubble"></div>
+<div id="pet" title="点我许愿"><img alt="许愿姬" src="data:image/png;base64,%ART%"></div>
+<div id="stateTag">WISHMAID · <span id="tagState">11</span></div>
 <script>
-    const selfUrl = window.location.href;
-    const payloadBox = document.getElementById("payloadBox");
-    const canvas = document.getElementById("particleCanvas");
-    const ctx = canvas.getContext("2d");
-
-    // 画布适配窗口
-    function resizeCanvas(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    // 粒子：沿着三元图表预设路径流动
-    const paths = [
-        [{x:0.12,y:0.28},{x:0.38,y:0.34}], // 逻辑符号定义区
-        [{x:0.62,y:0.28},{x:0.86,y:0.36}], // 小三态时序区
-        [{x:0.14,y:0.60},{x:0.36,y:0.72}], // BC预处理层
-        [{x:0.64,y:0.60},{x:0.84,y:0.74}]  // 布尔推演区
-    ];
-    let particles = [];
-    const bubbleTexts = [
-        "正在读取规则河床...",
-        "转换链路行进中",
-        "你还满意吗？",
-        "是否继续向前分叉？",
-        "快照锚点就绪",
-        "时序流正在呼吸"
-    ];
-
-    class Particle{
-        constructor(){
-            this.path = paths[Math.floor(Math.random()*paths.length)];
-            this.progress = 0;
-            this.speed = 0.0025 + Math.random()*0.003;
-            this.radius = 1.8 + Math.random()*2.2;
-            this.color = "#22d3ee";
-            this.bubbleTriggered = false;
-        }
-        update(){
-            this.progress += this.speed;
-            if(this.progress >= 1){
-                this.progress = 0;
-                this.bubbleTriggered = false;
-            }
-            const [p0,p1] = this.path;
-            this.x = p0.x + (p1.x-p0.x)*this.progress;
-            this.y = p0.y + (p1.y-p0.y)*this.progress;
-            // 走到路径中点，弹出交互气泡
-            if(this.progress > 0.48 && this.progress < 0.52 && !this.bubbleTriggered){
-                this.bubbleTriggered = true;
-                popBubble(bubbleTexts[Math.floor(Math.random()*bubbleTexts.length)]);
-            }
-        }
-        draw(){
-            ctx.beginPath();
-            ctx.arc(this.x * canvas.width, this.y * canvas.height, this.radius, 0, Math.PI*2);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-        }
-    }
-    function popBubble(text){
-        const div = document.createElement("div");
-        div.className = "ask-bubble";
-        div.innerText = text;
-        div.style.left = (Math.random()*70 + 15)+"%";
-        div.style.top = (Math.random()*60 + 20)+"%";
-        document.body.appendChild(div);
-        setTimeout(()=>div.remove(),3200);
-    }
-    // 持续生成粒子
-    function loop(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        if(particles.length < 45){
-            particles.push(new Particle());
-        }
-        particles.forEach(p=>{
-            p.update();
-            p.draw();
-        })
-        requestAnimationFrame(loop);
-    }
-    loop();
-
-    // 读取url参数自动填充payload
-    const params = new URLSearchParams(location.search);
-    const autoPayload = params.get("payload");
-    if(autoPayload){
-        payloadBox.value = decodeURIComponent(autoPayload);
-    }
-
-    // 追加标记按钮
-    function appendToken(s){
-        payloadBox.value += s + " ";
-    }
-
-    async function forwardRequest(){
-        const targetUrl = document.getElementById("urlBox").value.trim();
-        const payload = payloadBox.value;
-        const outDom = document.getElementById("out");
-
-        // 模拟器分支：没有填后端地址，本地模拟内核返回
-        if(!targetUrl){
-            outDom.textContent = `==== SIMULATED KERNEL RESPONSE ====
+const P=new URLSearchParams(location.search), selfUrl=location.href.split('?')[0];
+const base=(P.get('base')==null||P.get('base')==='')?null:Number(P.get('base'));
+const phase=(P.get('phase')==null||P.get('phase')==='')?0:Number(P.get('phase'));
+const t0=Date.now();
+const ZONES=[['北京','Asia/Shanghai'],['东京','Asia/Tokyo'],['迪拜','Asia/Dubai'],['莫斯科','Europe/Moscow'],['巴黎','Europe/Paris'],['伦敦','Europe/London'],['纽约','America/New_York'],['洛杉矶','America/Los_Angeles'],['悉尼','Australia/Sydney'],['奥克兰','Pacific/Auckland'],['圣保罗','America/Sao_Paulo'],['火奴鲁鲁','Pacific/Honolulu']];
+function nowMs(){ return base===null ? Date.now()+phase*1000 : base*1000+(Date.now()-t0)+phase*1000; }
+function fmt(ms,tz){ try{ return new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(ms)); }catch(e){ return 'void'; } }
+const big=document.getElementById('big'), zonesDom=document.getElementById('zones'), pCal=document.getElementById('p-cal');
+document.getElementById('p-self').textContent=selfUrl;
+document.getElementById('p-base').textContent=base===null?'void（本机自由走表）':base;
+document.getElementById('p-phase').textContent=phase===0?'0':(phase>0?'+':'')+phase+' 秒';
+document.getElementById('p-payload').textContent=P.get('payload')?decodeURIComponent(P.get('payload')):'void';
+(function stars(){
+ const c=document.getElementById('stars'), ctx=c.getContext('2d'); let pts=[];
+ function resize(){ c.width=innerWidth;c.height=innerHeight; pts=Array.from({length:120},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,ph:Math.random()*6.28})); }
+ resize(); addEventListener('resize',resize);
+ (function loop(){ if(document.hidden){requestAnimationFrame(loop);return;}
+   ctx.clearRect(0,0,c.width,c.height); const t=Date.now()/1000;
+   for(const p of pts){ const a=.25+.55*(.5+.5*Math.sin(t*1.6+p.ph));
+     ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fillStyle=`rgba(125,211,252,${a})`; ctx.fill(); }
+   requestAnimationFrame(loop); })();
+})();
+let lastSec=-1;
+(function tick(){
+ const ms=nowMs(), sec=Math.floor(ms/1000);
+ if(sec!==lastSec){ lastSec=sec;
+   big.textContent=fmt(ms,'Asia/Shanghai');
+   const s=new Date(ms).getUTCSeconds(); const isCal=(s===0||s===33);
+   big.classList.toggle('cal',isCal);
+   pCal.textContent=isCal?'● 校准点':(`○ 未到校准点（每分 :00 / :33）`);
+   zonesDom.innerHTML=ZONES.map(([n,z])=>`<div class="zrow"><span>${n}</span><b>${fmt(ms,z)}</b></div>`).join('');
+ }
+ requestAnimationFrame(tick);
+})();
+const payloadBox=document.getElementById('payloadBox');
+function appendToken(s){ payloadBox.value+=s+' '; }
+const MAID={mood:'idle',wishes:Number(localStorage.getItem('maid_wish_cnt')||0),
+ lines:{idle:['我在。要不要许个愿？','11 不是空，是还没决定。','这里的钟只显示，不当标准。'],
+ wish:['愿望收到。我给它判了个相位。','先别急着落地。']}};
+const bubble=document.getElementById('bubble'), tagState=document.getElementById('tagState');
+let bubbleTimer=null, wishLock=false;
+function say(t,ms=5200){ bubble.textContent=t; bubble.classList.add('show'); clearTimeout(bubbleTimer); bubbleTimer=setTimeout(()=>bubble.classList.remove('show'),ms); }
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function phaseOf(str){
+ const bits=(str.match(/[01]/g)||[]).join(''); const pairs=[];
+ for(let i=0;i+1<bits.length;i+=2) pairs.push(bits.slice(i,i+2));
+ const acc={pos:0,neg:0,zero:0,nul:0};
+ for(const p of pairs){ if(p==='01')acc.pos++; else if(p==='10')acc.neg++; else if(p==='00')acc.zero++; else acc.nul++; }
+ const net=acc.pos-acc.neg; let token,label;
+ if(acc.nul>0){token='11';label='快照锁·null 挂住';}
+ else if(net>0){token='10';label='向前生成 +1';}
+ else if(net<0){token='00';label='回溯';}
+ else {token='01';label='迷茫停滞·不进位不抛异常';}
+ return {token,label,acc,net};
+}
+function selfUpdate(){
+ document.title=`许愿姬 · ${fmt(nowMs(),'Asia/Shanghai')}`;
+ document.querySelector('.sub').textContent=`Living HTML · 许愿姬值守 · 已收愿望 ${MAID.wishes}`;
+ tagState.textContent=MAID.mood;
+}
+function wish(){
+ if(wishLock) return; wishLock=true;
+ const box=document.getElementById('wishBox'), text=box.value.trim();
+ MAID.mood='wish'; selfUpdate();
+ if(!text){ say(pick(MAID.lines.idle)); MAID.mood='idle'; selfUpdate(); wishLock=false; return; }
+ let h=2166136261; for(const ch of text){ h^=ch.codePointAt(0); h=Math.imul(h,16777619)>>>0; }
+ const bits=h.toString(2).padStart(32,'0').slice(0,16), ph=phaseOf(bits);
+ MAID.wishes++; localStorage.setItem('maid_wish_cnt',MAID.wishes);
+ document.getElementById('out').textContent=`==== 许愿姬 · 相位判定 ====
+愿望：${text}
+位串：${bits.match(/../g).join(' ')}
+相位：${ph.token} · ${ph.label}
+计数：+1=${ph.acc.pos} -1=${ph.acc.neg} 0=${ph.acc.zero} 空=${ph.acc.nul} 净值=${ph.net>=0?'+':''}${ph.net}
+时间：${fmt(nowMs(),'Asia/Shanghai')} CST`;
+ say(`${pick(MAID.lines.wish)}\n相位 ${ph.token} · ${ph.label}`,6000);
+ MAID.mood='idle';
+ const u=new URL(location.href); u.searchParams.set('phase',String(ph.net)); u.searchParams.set('payload',encodeURIComponent(ph.token));
+ history.replaceState(null,'',u);
+ selfUpdate(); box.value=''; setTimeout(()=>wishLock=false,600);
+}
+document.getElementById('pet').addEventListener('click',()=>{MAID.mood='idle';wish();});
+document.getElementById('wishBox').addEventListener('keydown',e=>{if(e.key==='Enter')wish();});
+setInterval(()=>{ if(document.hidden||bubble.classList.contains('show'))return; say(pick(MAID.lines.idle),4200); },17000);
+setTimeout(()=>say('许愿姬上线了。\n点我，或者写下你的愿望。'),900);
+selfUpdate();
+async function forwardRequest(){
+ const targetUrl=document.getElementById('urlBox').value.trim(), outDom=document.getElementById('out');
+ const payload=payloadBox.value, ms=nowMs(), epoch=Math.floor(ms/1000), stamp=fmt(ms,'Asia/Shanghai');
+ if(!targetUrl){
+  outDom.textContent=`==== SIMULATED KERNEL RESPONSE ====
 MIRROR SELF URL: ${selfUrl}
+LOCAL TIME (CST): ${stamp} epoch=${epoch}
+PHASE: ${phase>0?'+':''}${phase}s BASE: ${base===null?'void':base}
 INPUT PAYLOAD: ${payload}
-
-[KERNEL STATE PARSE]
-Detected marker: ${payload}
-
---- Canvas Evolution Log ---
-> Seed token accepted, expanding sequence
-> +1 forward generation activated, canvas growing
-> Marker 11: FREEZE CANVAS, snapshot saved at this mirror address
-> Marker 00: rollback history, timeline retreat
-> Marker 01: forward iteration stall, no new growth
-> Marker 10: continue expansion
-
 ==== EXTENDED TOKEN OUTPUT ====
-${payload},s_0001,s_0002,s_0003,branch_a,branch_b,canvas_node_001,canvas_node_002,recurse_next,history_back,probability_0,probability_1,snapshot_hash_${Date.now()},chain_end`;
-            return;
-        }
-
-        // 正式转发分支：发给远端内核API
-        outDom.textContent = "Mirror forwarding...";
-        try{
-            const res = await fetch(targetUrl,{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({
-                    content:payload,
-                    mirror:selfUrl
-                })
-            });
-            const raw = await res.text();
-            outDom.textContent = raw;
-        }catch(e){
-            outDom.textContent = `Mirror link failed:\n${e.message}`;
-        }
-    }
+${payload},s_0001,s_0002,s_0003,branch_a,branch_b,snapshot_${epoch},chain_end`;
+  const ph=phaseOf(payload); say(`相位 <b>${ph.token}</b> · ${ph.label}`,6000); return;
+ }
+ outDom.textContent='Mirror forwarding...';
+ try{ const res=await fetch(targetUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({content:payload,mirror:selfUrl,phase,base,epoch})}); outDom.textContent=await res.text(); }
+ catch(e){ outDom.textContent='Mirror link failed:\n'+e.message; say('链路断了。'); }
+}
 </script>
 </body>
 </html>
+"""
+html = html.replace("%ART%", art_b64)
+os.makedirs(os.path.dirname(DST), exist_ok=True)
+with open(DST, "w", encoding="utf-8") as f:
+    f.write(html)
+print("written", DST, os.path.getsize(DST), "bytes")
