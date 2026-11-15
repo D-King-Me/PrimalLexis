@@ -2,403 +2,177 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>啊呜 · Premier Lexis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>啊呜 · 动态版</title>
 <style>
-  :root {
-    --bg-0: #05070d;
-    --bg-1: #0a1020;
-    --accent: #7cf0ff;
-    --accent-2: #5a8bff;
-    --text: #eaf6ff;
-    --muted: #8aa0c7;
-  }
+:root{
+  --c-skin:#f8fbff;
+  --c-hair:#b8e0f5;
+  --c-hair-dark:#84b8d8;
+  --c-eye:#4888bb;
+  --c-line:#5588aa;
+  --c-bg:#f4f9fc;
+  --c-text:#224466;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  width:100vw; height:100vh;
+  background:var(--c-bg);
+  display:flex; justify-content:center; align-items:center;
+  font-family:system-ui, sans-serif;
+  overflow:hidden;
+  position:relative;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* 主角容器 */
+.stage{
+  width: 420px;
+  height: 520px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.stage:hover{
+  transform: scale(1.02);
+}
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background:
-      radial-gradient(1200px 700px at 20% 10%, rgba(90,139,255,0.18), transparent 60%),
-      radial-gradient(900px 600px at 90% 90%, rgba(124,240,255,0.12), transparent 60%),
-      linear-gradient(180deg, var(--bg-0), var(--bg-1));
-    color: var(--text);
-    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-  }
+/* 整体呼吸动画 */
+.awu-body {
+  width: 100%; height: 100%;
+  animation: breathe 3s ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.01); }
+}
 
-  /* 背景网格 */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(124,240,255,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,240,255,0.06) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-  }
+/* 眨眼 */
+.eye-left, .eye-right {
+  animation: blink 4s infinite;
+  transform-origin: center;
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
 
-  /* 顶部信息栏 */
-  .hud {
-    position: fixed;
-    top: 16px;
-    left: 16px;
-    right: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    z-index: 20;
-    pointer-events: none;
-  }
+/* 发丝摇摆 */
+.hair-left, .hair-right {
+  transform-origin: top center;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+.hair-right { animation-delay: -2s; }
+@keyframes sway {
+  from { transform: rotate(-3deg); }
+  to   { transform: rotate(3deg); }
+}
 
-  .brand {
-    font-size: 13px;
-    letter-spacing: 6px;
-    color: var(--accent);
-    text-shadow: 0 0 18px rgba(124,240,255,0.45);
-  }
+/* 嘴巴小动效 */
+.mouth {
+  animation: talk 0.8s ease-in-out infinite alternate;
+}
+@keyframes talk {
+  from { transform: translateY(0); }
+  to   { transform: translateY(1.5px); }
+}
 
-  .status {
-    font-size: 12px;
-    color: var(--muted);
-    background: rgba(10,16,32,0.55);
-    border: 1px solid rgba(124,240,255,0.18);
-    padding: 6px 10px;
-    border-radius: 999px;
-    pointer-events: auto;
-  }
-
-  .status b {
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  /* 舞台 */
-  .stage {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-  }
-
-  /* 啊呜容器 */
-  .awu {
-    position: relative;
-    width: 220px;
-    height: 260px;
-    cursor: pointer;
-    will-change: transform;
-    animation: float 4s ease-in-out infinite;
-  }
-
-  /* 阴影 */
-  .shadow {
-    position: absolute;
-    left: 50%;
-    bottom: -6px;
-    width: 140px;
-    height: 18px;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse, rgba(124,240,255,0.35), transparent 70%);
-    filter: blur(4px);
-    animation: shadowPulse 4s ease-in-out infinite;
-  }
-
-  /* 身体 */
-  .body {
-    position: absolute;
-    left: 50%;
-    bottom: 30px;
-    width: 160px;
-    height: 180px;
-    transform: translateX(-50%);
-    background:
-      radial-gradient(120px 100px at 50% 35%, rgba(124,240,255,0.55), rgba(90,139,255,0.25) 60%, transparent 70%),
-      linear-gradient(180deg, rgba(124,240,255,0.25), rgba(10,16,32,0.6));
-    border: 1px solid rgba(124,240,255,0.45);
-    border-radius: 48% 52% 46% 54% / 55% 55% 45% 45%;
-    box-shadow:
-      0 0 40px rgba(124,240,255,0.35),
-      inset 0 0 30px rgba(124,240,255,0.15);
-    animation: breathe 4s ease-in-out infinite;
-  }
-
-  /* 耳朵 */
-  .ear {
-    position: absolute;
-    top: 100px;
-    width: 34px;
-    height: 70px;
-    background: linear-gradient(180deg, rgba(124,240,255,0.55), rgba(90,139,255,0.25));
-    border: 1px solid rgba(124,240,255,0.45);
-    border-radius: 60% 60% 20% 20%;
-    box-shadow: 0 0 18px rgba(124,240,255,0.35);
-  }
-  .ear.left { left: 38px; transform: rotate(-12deg); transform-origin: bottom center; animation: earLeft 4s ease-in-out infinite; }
-  .ear.right { right: 38px; transform: rotate(12deg); transform-origin: bottom center; animation: earRight 4s ease-in-out infinite; }
-
-  /* 眼睛 */
-  .eye {
-    position: absolute;
-    top: 155px;
-    width: 14px;
-    height: 22px;
-    background: #eaf6ff;
-    border-radius: 50%;
-    box-shadow: 0 0 12px rgba(234,246,255,0.8);
-    animation: blink 6s ease-in-out infinite;
-  }
-  .eye.left { left: 72px; }
-  .eye.right { right: 72px; }
-
-  /* 嘴巴 */
-  .mouth {
-    position: absolute;
-    top: 185px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 28px;
-    height: 14px;
-    border-bottom: 2px solid rgba(234,246,255,0.8);
-    border-radius: 0 0 30px 30px;
-    animation: mouth 4s ease-in-out infinite;
-  }
-
-  /* 小光点 */
-  .sparkle {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #eaf6ff;
-    box-shadow: 0 0 10px #7cf0ff;
-    animation: sparkle 3s ease-in-out infinite;
-  }
-  .sparkle.s1 { top: 120px; left: 30px; animation-delay: 0s; }
-  .sparkle.s2 { top: 140px; right: 24px; animation-delay: 1s; }
-  .sparkle.s3 { top: 200px; left: 20px; animation-delay: 2s; }
-
-  /* 名字标签 */
-  .name {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    letter-spacing: 8px;
-    color: var(--accent);
-    text-shadow: 0 0 12px rgba(124,240,255,0.6);
-    padding: 4px 10px;
-    border: 1px solid rgba(124,240,255,0.3);
-    border-radius: 999px;
-    background: rgba(10,16,32,0.45);
-  }
-
-  /* 气泡 */
-  .bubble {
-    position: absolute;
-    top: -60px;
-    left: 50%;
-    transform: translateX(-50%) scale(0);
-    transform-origin: bottom center;
-    padding: 8px 14px;
-    background: rgba(10,16,32,0.8);
-    border: 1px solid rgba(124,240,255,0.45);
-    border-radius: 14px;
-    font-size: 13px;
-    color: var(--text);
-    white-space: nowrap;
-    opacity: 0;
-    transition: transform 0.35s ease, opacity 0.35s ease;
-    pointer-events: none;
-  }
-  .bubble.show {
-    transform: translateX(-50%) scale(1);
-    opacity: 1;
-  }
-  .bubble::after {
-    content: "";
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid rgba(124,240,255,0.45);
-  }
-
-  /* 底部提示 */
-  .tip {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    z-index: 10;
-  }
-  .tip kbd {
-    padding: 2px 6px;
-    border: 1px solid rgba(124,240,255,0.3);
-    border-radius: 6px;
-    color: var(--accent);
-    background: rgba(10,16,32,0.45);
-  }
-
-  /* 动画 */
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  @keyframes breathe {
-    0%, 100% { transform: translateX(-50%) scale(1); }
-    50% { transform: translateX(-50%) scale(1.04); }
-  }
-
-  @keyframes shadowPulse {
-    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
-    50% { transform: translateX(-50%) scale(1.12); opacity: 0.9; }
-  }
-
-  @keyframes earLeft {
-    0%, 100% { transform: rotate(-12deg); }
-    50% { transform: rotate(-18deg); }
-  }
-
-  @keyframes earRight {
-    0%, 100% { transform: rotate(12deg); }
-    50% { transform: rotate(18deg); }
-  }
-
-  @keyframes blink {
-    0%, 48%, 52%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.1); }
-  }
-
-  @keyframes mouth {
-    0%, 100% { height: 14px; }
-    50% { height: 18px; }
-  }
-
-  @keyframes sparkle {
-    0%, 100% { opacity: 0.3; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.3); }
-  }
+/* 气泡样式 */
+.bubble{
+  position:absolute;
+  top: 20%; left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: rgba(255,255,255,0.92);
+  border: 1.5px solid var(--c-hair-dark);
+  border-radius: 16px;
+  padding: 10px 20px;
+  font-size: 15px; color: #1d4666;
+  box-shadow: 0 4px 10px rgba(100,160,200,0.15);
+  opacity: 0;
+  transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.bubble.show{
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
 </style>
 </head>
 <body>
 
-<div class="hud">
-  <div class="brand">PREMIER LEXIS · 啊呜</div>
-  <div class="status">本源标识 <b>DNAI</b> · 待机中</div>
-</div>
+<div class="stage" id="awu" title="点我互动">
+  <!-- 气泡 -->
+  <div class="bubble" id="bubble">啊呜～</div>
 
-<div class="stage">
-  <div class="awu" id="awu" role="button" aria-label="啊呜桌宠" tabindex="0">
-    <div class="bubble" id="bubble">啊呜！</div>
+  <!-- SVG 角色 -->
+  <svg class="awu-body" viewBox="0 0 420 480">
+    <!-- 头发（带摇摆） -->
+    <g class="hair-left"><path d="M210 70 C130 80, 90 160, 100 270 C110 340, 160 380, 210 390 C260 380, 310 340, 320 270 C330 160, 290 80, 210 70 Z" fill="var(--c-hair)" stroke="var(--c-line)" stroke-width="2"/></g>
+    <g class="hair-right"><path d="M110 130 C100 190, 115 260,135 310" fill="none" stroke="var(--c-hair-dark)" stroke-width="2"/></g>
+    <path d="M310 130 C320 190,305 260,285 310" fill="none" stroke="var(--c-hair-dark)" stroke-width="2"/>
 
-    <div class="ear left"></div>
-    <div class="ear right"></div>
+    <!-- 白色发带 -->
+    <path d="M140 85 C180 65, 240 65, 280 85 C270 70, 210 50, 150 70 Z" fill="#ffffff" stroke="#b8d4e8" stroke-width="1.5"/>
+    <!-- X发夹 -->
+    <line x1="240" y1="140" x2="265" y2="165" stroke="#ffffff" stroke-width="4"/>
+    <line x1="265" y1="140" x2="240" y2="165" stroke="#ffffff" stroke-width="4"/>
 
-    <div class="body"></div>
+    <!-- 脸 -->
+    <ellipse cx="210" cy="210" rx="82" ry="95" fill="var(--c-skin)" stroke="var(--c-line)" stroke-width="2"/>
 
-    <div class="eye left"></div>
-    <div class="eye right"></div>
-    <div class="mouth"></div>
+    <!-- 眼睛（带眨眼） -->
+    <g class="eye-left">
+      <ellipse cx="162" cy="200" rx="14" ry="18" fill="var(--c-eye)"/>
+      <circle cx="156" cy="194" r="4" fill="#fff"/>
+    </g>
+    <g class="eye-right">
+      <ellipse cx="258" cy="200" rx="14" ry="18" fill="var(--c-eye)"/>
+      <circle cx="252" cy="194" r="4" fill="#fff"/>
+    </g>
 
-    <div class="sparkle s1"></div>
-    <div class="sparkle s2"></div>
-    <div class="sparkle s3"></div>
+    <!-- 嘴巴 -->
+    <path class="mouth" d="M204 235 Q210 242 216 235" fill="none" stroke="#996677" stroke-width="2" stroke-linecap="round"/>
 
-    <div class="shadow"></div>
-    <div class="name">啊 呜</div>
-  </div>
-</div>
+    <!-- 耳机 -->
+    <circle cx="110" cy="230" r="24" fill="#dde8f0" stroke="#668899" stroke-width="2"/>
+    <circle cx="310" cy="230" r="24" fill="#dde8f0" stroke="#668899" stroke-width="2"/>
+    <path d="M110 230 C90 200, 100 160,140 140" fill="none" stroke="#668899" stroke-width="2"/>
+    <path d="M310 230 C330 200, 320 160,280 140" fill="none" stroke="#668899" stroke-width="2"/>
 
-<div class="tip">
-  移动鼠标靠近啊呜 · <kbd>点击</kbd> 互动 · <kbd>空格</kbd> 呼唤
+    <!-- 手 -->
+    <path d="M100 220 C90 260,110 290,130 280 C145 270,140 240,120 225 Z" fill="var(--c-skin)" stroke="var(--c-line)" stroke-width="1.5"/>
+    <path d="M320 220 C330 260,310 290,290 280 C275 270,280 240,300 225 Z" fill="var(--c-skin)" stroke="var(--c-line)" stroke-width="1.5"/>
+
+    <!-- 衣服 -->
+    <path d="M140 290 C120 360, 130 440, 210 450 C290 440, 300 360, 280 290 C250 310, 170 310,140 290 Z" fill="#d8eaf7" stroke="var(--c-line)" stroke-width="2"/>
+  </svg>
 </div>
 
 <script>
-  const awu = document.getElementById("awu");
-  const bubble = document.getElementById("bubble");
-  const status = document.querySelector(".status b");
+const awu = document.getElementById("awu");
+const bubble = document.getElementById("bubble");
+const msgList = [
+  "啊呜～！",
+  "反内卷啦～",
+  "恒道AI在线",
+  "DNAI 01101001",
+  "你点我干嘛呀？",
+  "要一起推演吗？",
+  "根锚定好了哦。"
+];
 
-  const messages = [
-    "啊呜！",
-    "我在这。",
-    "接着推演吧。",
-    "根已经锚定了。",
-    "DNAI 在线。",
-    "继续递归。",
-    "嗯。"
-  ];
-
-  let state = "idle";
-
-  // 鼠标跟随
-  document.addEventListener("mousemove", (e) => {
-    const x = e.clientX / window.innerWidth - 0.5;
-    const y = e.clientY / window.innerHeight - 0.5;
-
-    awu.animate(
-      {
-        transform: `translate(${x * 40}px, ${y * 30}px)`
-      },
-      { duration: 1200, easing: "ease-out", fill: "forwards" }
-    );
-
-    if (state !== "following") {
-      state = "following";
-      status.textContent = "FOLLOW";
-    }
-  });
-
-  // 点击互动
-  function interact(label) {
-    bubble.textContent = label || messages[Math.floor(Math.random() * messages.length)];
-    bubble.classList.add("show");
-
-    awu.animate(
-      { scale: [1, 1.08, 1] },
-      { duration: 400, easing: "ease-out" }
-    );
-
-    status.textContent = "ACTIVE";
-
-    clearTimeout(interact._t);
-    interact._t = setTimeout(() => {
-      bubble.classList.remove("show");
-      state = "idle";
-      status.textContent = "DNAI";
-    }, 1400);
-  }
-
-  awu.addEventListener("click", () => interact());
-
-  // 键盘呼唤
-  document.addEventListener("keydown", (e) => {
-    if (e.code === "Space") {
-      e.preventDefault();
-      interact("啊呜！");
-    }
-  });
-
-  // 初始呼吸循环
-  setInterval(() => {
-    if (state === "idle") {
-      status.textContent = "DNAI";
-    }
-  }, 2000);
+awu.onclick = () => {
+  // 随机选一句话
+  bubble.textContent = msgList[Math.floor(Math.random() * msgList.length)];
+  // 显示气泡
+  bubble.classList.add("show");
+  // 1.5秒后隐藏
+  clearTimeout(window.bubbleTimer);
+  window.bubbleTimer = setTimeout(() => {
+    bubble.classList.remove("show");
+  }, 1500);
+};
 </script>
-
 </body>
 </html>
